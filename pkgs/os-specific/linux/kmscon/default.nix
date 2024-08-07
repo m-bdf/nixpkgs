@@ -1,7 +1,6 @@
 { lib
 , stdenv
 , fetchFromGitHub
-, fetchpatch
 , meson
 , libtsm
 , systemd
@@ -17,17 +16,18 @@
 , mesa
 , ninja
 , buildPackages
+, check
 }:
 
 stdenv.mkDerivation rec {
   pname = "kmscon";
-  version = "9.0.0";
+  version = "Login-Session-Tracking";
 
   src = fetchFromGitHub {
-    owner = "Aetf";
+    owner = "michael-oberpriller";
     repo = "kmscon";
-    rev = "v${version}";
-    sha256 = "sha256-8owyyzCrZVbWXcCR+RA+m0MOrdzW+efI+rIMWEVEZ1o=";
+    rev = version;
+    sha256 = "sha256-/C9zEab+PYYKKBgAB/5QikD55Ab0frp8n++smgm8lCA=";
   };
 
   strictDeps = true;
@@ -46,6 +46,7 @@ stdenv.mkDerivation rec {
     pixman
     systemd
     mesa
+    check
   ];
 
   nativeBuildInputs = [
@@ -56,17 +57,7 @@ stdenv.mkDerivation rec {
     libxslt # xsltproc
   ];
 
-  patches = [
-    (fetchpatch {
-      name = "0001-tests-fix-warnings.patch";
-      url = "https://github.com/Aetf/kmscon/commit/b65f4269b03de580923ab390bde795e7956b633f.patch";
-      sha256 = "sha256-ngflPwmNMM/2JzhV+hHiH3efQyoSULfqEywzWox9iAQ=";
-    })
-  ];
-
-  # _FORTIFY_SOURCE requires compiling with optimization (-O)
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-O"
-    + " -Wno-error=maybe-uninitialized"; # https://github.com/Aetf/kmscon/issues/49
+  PKG_CONFIG_SYSTEMD_SYSTEMDSYSTEMUNITDIR = "${placeholder "out"}/lib/systemd/system";
 
   configureFlags = [
     "--enable-multi-seat"
